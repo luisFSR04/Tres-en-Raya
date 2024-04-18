@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 
 function Square({ value, onSquareClick }) {
   return (
@@ -52,28 +52,6 @@ function Board({ xIsNext, squares, onPlay }) {
   );
 }
 
-export default function Game() {
-  const [xIsNext, setXIsNext] = useState(true);
-  const [history, setHistory] = useState([Array(9).fill(null)]);
-  const currentSquares = history[history.length - 1];
-
-  function handlePlay(nextSquares) {
-    setHistory([...history, nextSquares]);
-    setXIsNext(!xIsNext);
-  }
-
-  return (
-    <div className="game">
-      <div className="game-board">
-        <Board xIsNext={xIsNext} squares={currentSquares} onPlay={handlePlay} />
-      </div>
-      <div className="game-info">
-        <ol>{/*TODO*/}</ol>
-      </div>
-    </div>
-  );
-}
-
 function calculateWinner(squares) {
   const lines = [
     [0, 1, 2],
@@ -92,4 +70,41 @@ function calculateWinner(squares) {
     }
   }
   return null;
+}
+
+export default function Game() {
+  const [xIsNext, setXIsNext] = useState(true);
+  const [history, setHistory] = useState([Array(9).fill(null)]);
+  const [winnerCounts, setWinnerCounts] = useState({ '👍': 0, '👌': 0 });
+
+  const currentSquares = history[history.length - 1];
+
+  function handlePlay(nextSquares) {
+    setHistory([...history, nextSquares]);
+    const winner = calculateWinner(nextSquares);
+    if (winner) {
+      setWinnerCounts({ ...winnerCounts, [winner]: winnerCounts[winner] + 1 });
+    }
+    setXIsNext(!xIsNext);
+  }
+
+  function handleReset() {
+    setHistory([Array(9).fill(null)]);
+    setWinnerCounts({ '👍': 0, '👌': 0 });
+    setXIsNext(true);
+  }
+
+  return (
+    <div className="game">
+      <div className="game-board">
+        <Board xIsNext={xIsNext} squares={currentSquares} onPlay={handlePlay} />
+      </div>
+      <div className="game-info">
+        <div>Contador de victorias:</div>
+        <div>Jugador 👍: {winnerCounts['👍']}</div>
+        <div>Jugador 👌: {winnerCounts['👌']}</div>
+        <button onClick={handleReset}>Reiniciar</button>
+      </div>
+    </div>
+  );
 }
